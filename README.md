@@ -1,7 +1,3 @@
-Here’s the README file in markdown format based on your description:
-
----
-
 # LemanPay
 
 LemanPay is a PHP package that makes it simple to integrate payment functionality into your applications. It supports both redirect-based payment flows and direct card payments.
