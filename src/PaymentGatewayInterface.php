@@ -5,5 +5,5 @@ namespace PurewebCreator\LemanPay;
 interface PaymentGatewayInterface
 {
     public function createPaymentLink(array $payload);
-    public function paymentLinkStatus(string $paymentId);
+    public function paymentStatus(string $paymentId);
 }

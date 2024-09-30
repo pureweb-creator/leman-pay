@@ -51,11 +51,6 @@ class LemanPay implements PaymentGatewayInterface
         return $this->payment->Uri ?? $this->payment->PaymentUrl;
     }
 
-    public function getPaymentLinkId(): string
-    {
-        return $this->payment->PaymentLinkId ?? '';
-    }
-
     /**
      * @throws Exception
      */
@@ -75,28 +70,26 @@ class LemanPay implements PaymentGatewayInterface
     /**
      * @throws Exception
      */
+    public function paymentStatus(string $paymentId): object
+    {
+        return $this->paymentStatusRequest($paymentId, "/api/transaction/status");
+    }
+
+    /**
+     * @throws Exception
+     */
     public function paymentLinkStatus(string $paymentId): object
     {
-        $payload = ['PaymentLinkId' => $paymentId];
-
-        return $this->paymentStatusRequest($payload, "/api/paymentlink/status");
+        return $this->paymentStatusRequest($paymentId, "/api/paymentlink/status");
     }
 
     /**
      * @throws Exception
      */
-    public function transactionStatus(string $merchantId): object
+    public function paymentStatusRequest(string $paymentId, string $path)
     {
-        $payload = ['MerchantId' => $merchantId];
+        $payload = ['MerchantId' => $paymentId];
 
-        return $this->paymentStatusRequest($payload, "/api/transaction/status");
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function paymentStatusRequest(array $payload, string $path)
-    {
         $this->jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
 
         $r = $this->paymentService->executeRequest(self::HOST.$path, $this->jws);
