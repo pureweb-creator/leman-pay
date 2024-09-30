@@ -1,0 +1,19 @@
+{
+    "name": "aqua/leman-pay",
+    "description": "Leman Pay payment gateway",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Aqua\\LemanPay\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Aqua"
+        }
+    ],
+    "require": {
+      "ext-openssl": "*",
+      "ext-curl": "*"
+    }
+}
