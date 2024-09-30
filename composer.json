@@ -1,10 +1,10 @@
 {
-    "name": "aqua/leman-pay",
+    "name": "pureweb-creator/leman-pay",
     "description": "Leman Pay payment gateway",
     "type": "library",
     "autoload": {
         "psr-4": {
-            "Aqua\\LemanPay\\": "src/"
+            "PurewebCreator\\LemanPay\\": "src/"
         }
     },
     "authors": [

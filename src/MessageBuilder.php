@@ -1,6 +1,6 @@
 <?php
 
-namespace Aqua\LemanPay;
+namespace PurewebCreator\LemanPay;
 
 class MessageBuilder
 {
