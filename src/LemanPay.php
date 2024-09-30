@@ -21,7 +21,7 @@ class LemanPay implements PaymentGatewayInterface
 
     public function setSharedKey(string $key): void
     {
-        $this->sharedKey = $key;
+        $this->sharedKey = base64_decode($key);
     }
 
     public function setKid(string $kid): void

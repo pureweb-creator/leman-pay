@@ -14,7 +14,7 @@ readonly class JWS
         $JWSSignature = hash_hmac(
             Utils::getAlgo($JWSHeader['alg']),
             $computedHeader.".".$computedPayload,
-            base64_decode($sharedKey),
+            $sharedKey,
             true);
 
         $computedSignature = Utils::base64UrlEncode($JWSSignature);
