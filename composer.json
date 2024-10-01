@@ -2,6 +2,7 @@
     "name": "pureweb-creator/leman-pay",
     "description": "Leman Pay payment gateway",
     "type": "library",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "PurewebCreator\\LemanPay\\": "src/"
