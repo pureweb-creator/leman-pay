@@ -1,7 +1,3 @@
-Great! Here's an updated version of the README based on the new usage you shared:
-
----
-
 # LemanPay
 
 LemanPay is a PHP package that allows easy integration with the Leman payment gateway. You can either create payment links or directly process payments with credit cards. It is designed to be flexible, offering both an intuitive API and the ability to directly inspect the raw responses.
