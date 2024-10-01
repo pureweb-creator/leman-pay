@@ -25,7 +25,7 @@ readonly class JWS
     /**
      * @throws Exception
      */
-    public static function parse(string $jws)
+    public static function parse(string $jws): string
     {
         $parts = explode(".", $jws);
 
@@ -35,6 +35,6 @@ readonly class JWS
 
         list(, $payload, ) = $parts;
 
-        return json_decode(Utils::base64UrlDecode($payload));
+        return Utils::base64UrlDecode($payload);
     }
 }

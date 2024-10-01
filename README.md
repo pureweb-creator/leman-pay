@@ -1,10 +1,14 @@
+Great! Here's an updated version of the README based on the new usage you shared:
+
+---
+
 # LemanPay
 
-LemanPay is a PHP package that makes it simple to integrate LemanPay Payment Gateway functionality into your applications. It supports both redirect-based payment flows and direct card payments.
+LemanPay is a PHP package that allows easy integration with the Leman payment gateway. You can either create payment links or directly process payments with credit cards. It is designed to be flexible, offering both an intuitive API and the ability to directly inspect the raw responses.
 
 ## Installation
 
-Install the package via Composer:
+You can install the package via Composer:
 
 ```bash
 composer require pureweb-creator/leman-pay
@@ -12,7 +16,7 @@ composer require pureweb-creator/leman-pay
 
 ## Setup
 
-Before using the package, you need to set up your shared key and key ID (kid):
+Before using the package, you need to set up some keys:
 
 ```php
 <?php
@@ -20,133 +24,107 @@ Before using the package, you need to set up your shared key and key ID (kid):
 use PurewebCreator\LemanPay\LemanPay;
 
 $lemanPay = new LemanPay();
-$lemanPay->setSharedKey('your-shared-key');
-$lemanPay->setKid('your-key-id');
-?>
+$lemanPay
+    ->setSharedKey('your-shared-key')
+    ->setKid('your-key-id');
 ```
 
-## Usage
+## Usage Scenarios
 
-There are two primary scenarios for using LemanPay:
+### 1. Creating a Payment Link
 
-### 1. Redirect to Payment Link
-
-In this scenario, you create a payment link that redirects the user to complete the payment.
-
-#### Create a Payment Link
+You can generate a one-time payment link and redirect your user to that link for payment:
 
 ```php
 <?php
-$payment = $lemanPay->createPaymentLink([
-    "MerchantId" => "11111111", // Unique payment link ID assigned by the merchant (required)
-    "Amount" => 1000,           // Payment amount (required)
-    "Currency" => "RUB",        // Payment currency (required, could be RUB, EUR, USD)
-    "LinkType" => "OneTime",    // Type of payment link (required)
-    "ReturnUrl" => "http://test.com/return",
-    "CallbackUrl" => "http://test.com/callback",
-    "SuccessReturnUrl" => "http://test.com/success",
-    "FailedReturnUrl" => "http://test.com/fail",
+
+$response = $lemanPay->createPaymentLink([
+    "MerchantId" => "your-merchant-id", // required
+    "Amount" => 1000, // required
+    "Currency" => "RUB", // required (could be RUB, EUR, USD)
+    "LinkType" => "OneTime", // required
+    "ReturnUrl" => "http://127.0.0.1/return",
+    "CallbackUrl" => "http://127.0.0.1/callback",
+    "SuccessReturnUrl" => "http://127.0.0.1/success",
+    "FailedReturnUrl" => "http://127.0.0.1/fail",
 ]);
-?>
-```
 
-#### Get and Redirect to Payment Link
+// Get the payment link
+$link = $response->getPaymentLink();
 
-Once the payment link is created, you can get the payment URL and redirect the user:
-
-```php
-<?php
-$link = $payment->getPaymentLink();
+// Redirect the user to the payment link
 header("Location: $link");
-?>
 ```
 
-#### Check Payment Status
+### Checking the Status of a Payment Link
 
-To check the status of a payment:
+After creating a payment link, you can check its status:
 
 ```php
 <?php
-$payment = $lemanPay->paymentLinkStatus($merchantId);
 
-switch ($payment->Status) {
-    case 'Completed':
-        echo "Payment completed.";
-        break;
-    case 'Active':
-        echo "Payment is still active.";
-        break;
-    case 'Expired':
-        echo "Payment link has expired.";
-        break;
-    case 'InProcess':
-        echo "Payment is in process.";
-        break;
-    case 'Cancelled':
-        echo "Payment was cancelled.";
-        break;
-}
-?>
+$status = $lemanPay
+    ->getPaymentLinkInfo('your-merchant-id') // the same MerchantId used in createPaymentLink()
+    ->getStatus();
+
+echo "Payment Link Status: " . $status;
 ```
 
-Here, `merchantId` is the unique ID you used when creating the payment link.
+The `Status` can be one of the following:
 
-### 2. Direct Card Payment
+- `Completed`
+- `Active`
+- `Expired`
+- `InProcess`
+- `Cancelled`
 
-In this scenario, the user can pay directly with their credit card details.
+### 2. Direct Payment (with Credit Card)
 
-#### Make a Direct Card Payment
+You can also process a direct payment using credit card details. The payment will typically require a redirect to a 3DS page for authentication:
 
 ```php
 <?php
-$payment = $lemanPay->pay([
-    "MerchantId" => "11111111", // Unique merchant ID (required)
-    "Amount" => 1000,           // Payment amount (required)
-    "ReturnUrl" => "http://test.com/return",
-    "Currency" => "RUB",        // Payment currency (required, can be RUB, USD, EUR)
+
+$response = $lemanPay->pay([
+    "MerchantId" => "your-merchant-id", // required
+    "Amount" => 1000, // required
+    "Currency" => "RUB", // required (could be RUB, EUR, USD)
+    "ReturnUrl" => "http://127.0.0.1/return2", // required
     "FromCard" => (object) [
-        "Pan" => '1111111111111111', // Card number
-        "Holder" => 'NAME SURNAME',  // Cardholder name
-        "ExpYear" => '2033',         // Expiration year (4 digits)
-        "ExpMonth" => '06',          // Expiration month (2 digits)
-        "CVV" => '111',              // CVV code (3 digits)
+        "Pan" => '4111111111111111', // card number
+        "Holder" => 'NAME SURNAME', // cardholder name
+        "ExpYear" => '2033', // expiration year (YYYY)
+        "ExpMonth" => '06', // expiration month (MM)
+        "CVV" => '123', // CVV code
     ]
 ]);
-?>
+
+// Get the 3DS redirect link
+$link = $response->getPaymentLink();
+
+// Redirect to the 3DS page
+header("Location: $link");
 ```
 
-#### Get Payment Link for Direct Card Payment
+### Checking the Status of a Direct Payment
 
-This link is the URL address that the merchant needs to go to in order to continue the payment process
+After processing the direct payment, you can check its status:
 
 ```php
 <?php
-$link = $payment->getPaymentLink();
-?>
+
+$payment = $lemanPay->getPaymentInfo('your-merchant-id');
+$paymentStatus = $payment->getOrder()->Status;
+
+echo "Payment Status: " . $paymentStatus;
 ```
 
-#### Check Transaction Status
+The `Order->Status` field can provide the current state of the transaction.
 
-To check the status of a transaction:
+## Advanced: Direct Access to Response Fields
+
+While you can use specific getters like `getStatus()` or `getPaymentLink()`, the entire response object is public, allowing you to directly inspect its fields:
 
 ```php
-<?php
-$payment = $lemanPay->transactionStatus($merchantId);
-
-if ($payment->Order->Status === 'Completed') {
-    echo "Transaction completed.";
-} else {
-    echo "Transaction status: " . $payment->Order->Status;
-}
-?>
+var_dump($response->body);
 ```
-
-Here, `merchantId` is the unique ID you used when creating the payment.
-
-## License
-
-This package is licensed under the MIT License.
-
----
-
-This structure includes installation, setup, both usage scenarios, and how to check payment statuses. You can extend it by adding more detailed descriptions or additional features your package might support!

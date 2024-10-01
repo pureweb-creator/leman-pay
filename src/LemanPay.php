@@ -4,51 +4,14 @@ namespace PurewebCreator\LemanPay;
 
 use Exception;
 
-class LemanPay implements PaymentGatewayInterface
+class LemanPay extends LemanBase implements PaymentGatewayInterface
 {
-    private const string ALG = "HS256";
-    private const string HOST = "https://acsforpay.online";
-
-    private string $sharedKey;
-    private string $kid;
-    private string $jws;
-    private object $payment;
-
-    public function __construct(
-        private readonly PaymentService $paymentService = new PaymentService()
-    )
-    {}
-
-    public function setSharedKey(string $key): void
-    {
-        $this->sharedKey = base64_decode($key);
-    }
-
-    public function setKid(string $kid): void
-    {
-        $this->kid = $kid;
-    }
-
     /**
      * @throws Exception
      */
-    private function getProtectedHeader(): array
+    public function pay(array $payload): object
     {
-        $date = new \DateTime("now", new \DateTimeZone("UTC"));
-        $formattedDate = $date->format("Y-m-d\TH:i:s.u\Z");
-        $formattedDate = substr($formattedDate, 0, 23) . 'Z';
-
-        return [
-            "alg" => self::ALG,
-            "kid" => $this->kid,
-            "signdate" => $formattedDate,
-            "cty" => "application/json"
-        ];
-    }
-
-    public function getPaymentLink(): string
-    {
-        return $this->payment->Uri ?? $this->payment->PaymentUrl;
+        return $this->paymentRequest($payload, self::DIRECT_PAYMENT_PATH, PaymentTypeEnum::DirectDebit);
     }
 
     /**
@@ -56,60 +19,22 @@ class LemanPay implements PaymentGatewayInterface
      */
     public function createPaymentLink(array $payload): object
     {
-        return $this->paymentRequest($payload, "/api/paymentlink/create");
+        return $this->paymentRequest($payload, self::PAYMENT_LINK_PATH, PaymentTypeEnum::PaymentLink);
     }
 
     /**
      * @throws Exception
      */
-    public function pay(array $payload): static
+    public function getPaymentInfo(string $paymentId): object
     {
-        return $this->paymentRequest($payload, "/api/cards/pay");
+        return $this->info($paymentId, self::TRANSACTION_STATUS_PATH, PaymentTypeEnum::DirectDebit);
     }
 
     /**
      * @throws Exception
      */
-    public function paymentStatus(string $paymentId): object
+    public function getPaymentLinkInfo(string $paymentId): object
     {
-        return $this->paymentStatusRequest($paymentId, "/api/transaction/status");
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function paymentLinkStatus(string $paymentId): object
-    {
-        return $this->paymentStatusRequest($paymentId, "/api/paymentlink/status");
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function paymentStatusRequest(string $paymentId, string $path)
-    {
-        $payload = ['MerchantId' => $paymentId];
-
-        $this->jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
-
-        $r = $this->paymentService->executeRequest(self::HOST.$path, $this->jws);
-
-        return $this->paymentService->getParsedResponse($r);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function paymentRequest(array $payload, string $path): object
-    {
-        $this->jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
-
-        $r = $this->paymentService->executeRequest(self::HOST.$path, $this->jws);
-
-        $payload = $this->paymentService->getParsedResponse($r);
-
-        $this->payment = $payload;
-
-        return $this;
+        return $this->info($paymentId, self::PAYMENT_LINK_STATUS_PATH, PaymentTypeEnum::PaymentLink);
     }
 }
