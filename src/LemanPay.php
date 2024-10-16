@@ -25,6 +25,14 @@ class LemanPay extends LemanBase implements PaymentGatewayInterface
     /**
      * @throws Exception
      */
+    public function getCallbackInfo(string $payload): object
+    {
+        return $this->decodeData($payload);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getPaymentInfo(string $paymentId): object
     {
         return $this->info($paymentId, self::TRANSACTION_STATUS_PATH, PaymentTypeEnum::DirectDebit);
