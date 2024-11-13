@@ -36,31 +36,13 @@ You can generate a one-time payment link and redirect your user to that link for
 
 $response = $lemanPay->createPaymentLink([
     "MerchantId" => "12323", // Required
-    "Name" => "TestLink",
     "Amount" => 1000, // Required
     "Currency" => "RUB", // Required
     "LinkType" => "OneTime", // Required
-    "PaymentMethod" => "CARDS",
-    "TTL" => "00:30:00",
     "ReturnUrl" => "https://site.com/return",
     "CallbackUrl" => "https://webhook.site/notification",
     "SuccessReturnUrl" => "https://site.com/success",
-    "FailedReturnUrl" => "https://site.com/failure",
-    "AdditionalData" => (object) [
-        "ClientInfo" => (object) [ // Required if PaymentMethod  = P2PPAY
-            "ClientId" => "12323", // Required
-            "PhoneNumber" => "+79991231212",
-            "FirstName" => "John",
-            "LastName" => "Doe",
-            "DateOfBirth" => "2022-08-09T10:55:42.8017883Z",
-            "Email" => "john.doe@site.com", // Required
-            "Country" => "UKR",
-            "State" => "Kyiv Oblast",
-            "City" => "Kyiv",
-            "PostCode" => "01001",
-            "Address" => "20 Sunny Street"
-        ],
-    ],
+    "FailedReturnUrl" => "https://site.com/failure"
 ]);
 
 // Get the payment link
@@ -78,9 +60,8 @@ After creating a payment link, you can check its status:
 <?php
 
 $status = $lemanPay
-    ->getPaymentLinkInfo("your-merchant-id") // the same MerchantId used in createPaymentLink()
-    ->getOrder()
-    ->Status;
+    ->getPaymentInfo("your-merchant-id") // the same MerchantId used in createPaymentLink()
+    ->getStatus();
 
 echo "Payment Link Status: " . $status;
 ```
@@ -154,13 +135,13 @@ After processing the direct payment, you can check its status:
 ```php
 <?php
 
-$payment = $lemanPay->getPaymentInfo("your-merchant-id");
-$paymentStatus = $payment->getOrder()->Status;
+$payment = $lemanPay
+    ->getPaymentInfo("your-merchant-id")
+    ->getOrder()
+    ->Status;
 
 echo "Payment Status: " . $paymentStatus;
 ```
-
-The `Order->Status` field can provide the current state of the transaction.
 
 ## Receive webhook
 

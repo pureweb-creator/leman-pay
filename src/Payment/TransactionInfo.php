@@ -2,7 +2,7 @@
 
 namespace PurewebCreator\LemanPay\Payment;
 
-class Transaction
+class TransactionInfo
 {
     /**
      * @param object $payload

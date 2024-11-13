@@ -4,6 +4,8 @@ namespace PurewebCreator\LemanPay;
 
 use Exception;
 use PurewebCreator\LemanPay\Payment\LemanBase;
+use PurewebCreator\LemanPay\Payment\PaymentLinkInfo;
+use PurewebCreator\LemanPay\Payment\TransactionInfo;
 
 class LemanPay extends LemanBase
 {
@@ -34,8 +36,14 @@ class LemanPay extends LemanBase
     /**
      * @throws Exception
      */
-    public function getPaymentInfo(string $paymentId): object
+    public function getPaymentInfo(string $merchantId): PaymentLinkInfo|TransactionInfo
     {
-        return $this->info($paymentId);
+        try {
+            $paymentInfo = $this->getTransactionInfo($merchantId, self::TRANSACTION_STATUS_PATH);
+        } catch (Exception $exception) {
+            $paymentInfo = $this->getPaymentLinkInfo($merchantId, self::PAYMENT_LINK_STATUS_PATH);
+        }
+
+        return $paymentInfo;
     }
 }

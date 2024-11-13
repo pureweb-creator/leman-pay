@@ -14,6 +14,7 @@ abstract class LemanBase
     protected const string DIRECT_PAYMENT_PATH = self::API_PREFIX."/cards/pay";
     protected const string PAYMENT_LINK_PATH = self::API_PREFIX."/paymentlink/create";
     protected const string TRANSACTION_STATUS_PATH = self::API_PREFIX."/transaction/status";
+    protected const string PAYMENT_LINK_STATUS_PATH = self::API_PREFIX."/paymentlink/status";
 
     protected string $sharedKey;
     protected string $kid;
@@ -90,19 +91,37 @@ abstract class LemanBase
     /**
      * @throws Exception
      */
-    public function info(string $paymentId): Transaction
+    public function paymentInfo(string $merchantId, string $path)
     {
         $this->jws = JWS::create(
             $this->getProtectedHeader(),
-            ['MerchantId' => $paymentId],
+            ['MerchantId' => $merchantId],
             $this->sharedKey
         );
 
-        $r = $this->execute(self::HOST.self::TRANSACTION_STATUS_PATH, $this->jws);
+        $r = $this->execute(self::HOST.$path, $this->jws);
 
-        $payload = $this->decodeData($r);
+        return $this->decodeData($r);
+    }
 
-        return new Transaction($payload);
+    /**
+     * @throws Exception
+     */
+    public function getTransactionInfo(string $merchantId, string $path): TransactionInfo
+    {
+        $payload = $this->paymentInfo($merchantId, $path);
+
+        return new TransactionInfo($payload);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getPaymentLinkInfo(string $merchantId, string $path): PaymentLinkInfo
+    {
+        $payload = $this->paymentInfo($merchantId, $path);
+
+        return new PaymentLinkInfo($payload);
     }
 
     /**
