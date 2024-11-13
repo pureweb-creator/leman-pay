@@ -3,15 +3,16 @@
 namespace PurewebCreator\LemanPay;
 
 use Exception;
+use PurewebCreator\LemanPay\Payment\LemanBase;
 
-class LemanPay extends LemanBase implements PaymentGatewayInterface
+class LemanPay extends LemanBase
 {
     /**
      * @throws Exception
      */
     public function pay(array $payload): object
     {
-        return $this->paymentRequest($payload, self::DIRECT_PAYMENT_PATH, PaymentTypeEnum::DirectDebit);
+        return $this->createPayment($payload, self::DIRECT_PAYMENT_PATH);
     }
 
     /**
@@ -19,7 +20,7 @@ class LemanPay extends LemanBase implements PaymentGatewayInterface
      */
     public function createPaymentLink(array $payload): object
     {
-        return $this->paymentRequest($payload, self::PAYMENT_LINK_PATH, PaymentTypeEnum::PaymentLink);
+        return $this->createPayment($payload, self::PAYMENT_LINK_PATH);
     }
 
     /**
@@ -35,14 +36,6 @@ class LemanPay extends LemanBase implements PaymentGatewayInterface
      */
     public function getPaymentInfo(string $paymentId): object
     {
-        return $this->info($paymentId, self::TRANSACTION_STATUS_PATH, PaymentTypeEnum::DirectDebit);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getPaymentLinkInfo(string $paymentId): object
-    {
-        return $this->info($paymentId, self::PAYMENT_LINK_STATUS_PATH, PaymentTypeEnum::PaymentLink);
+        return $this->info($paymentId);
     }
 }

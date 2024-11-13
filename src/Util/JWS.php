@@ -1,6 +1,6 @@
 <?php
 
-namespace PurewebCreator\LemanPay;
+namespace PurewebCreator\LemanPay\Util;
 
 use Exception;
 
@@ -8,16 +8,16 @@ readonly class JWS
 {
     public static function create(array $JWSHeader, array $JWSPayload, string $sharedKey): string
     {
-        $computedHeader = Utils::base64UrlEncode(json_encode($JWSHeader));
-        $computedPayload = Utils::base64UrlEncode(json_encode($JWSPayload));
+        $computedHeader = Base64Url::encode(json_encode($JWSHeader));
+        $computedPayload = Base64Url::encode(json_encode($JWSPayload));
 
         $JWSSignature = hash_hmac(
-            Utils::getAlgo($JWSHeader['alg']),
+            self::matchAlgorithm($JWSHeader['alg']),
             $computedHeader.".".$computedPayload,
             $sharedKey,
             true);
 
-        $computedSignature = Utils::base64UrlEncode($JWSSignature);
+        $computedSignature = Base64Url::encode($JWSSignature);
 
         return $computedHeader . '.' . $computedPayload . '.' . $computedSignature;
     }
@@ -35,6 +35,15 @@ readonly class JWS
 
         list(, $payload, ) = $parts;
 
-        return Utils::base64UrlDecode($payload);
+        return Base64Url::decode($payload);
+    }
+
+    public static function matchAlgorithm(string $alg): string
+    {
+        return match ($alg){
+            'HS384' => 'sha384',
+            'HS512' => 'sha512',
+            default => 'sha256',
+        };
     }
 }

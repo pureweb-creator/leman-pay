@@ -1,6 +1,6 @@
 <?php
 
-namespace PurewebCreator\LemanPay;
+namespace PurewebCreator\LemanPay\Util;
 
 class MessageBuilder
 {
@@ -8,7 +8,7 @@ class MessageBuilder
 
     public static function create(string $message): MessageBuilder
     {
-        $builder = new self();
+        $builder = new self;
         $builder->message = $message;
         return $builder;
     }
@@ -19,7 +19,7 @@ class MessageBuilder
         return $this;
     }
 
-    public function get(): string
+    public function build(): string
     {
         return $this->message;
     }

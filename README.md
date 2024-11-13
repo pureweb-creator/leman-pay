@@ -79,18 +79,18 @@ After creating a payment link, you can check its status:
 
 $status = $lemanPay
     ->getPaymentLinkInfo("your-merchant-id") // the same MerchantId used in createPaymentLink()
-    ->getStatus();
+    ->getOrder()
+    ->Status;
 
 echo "Payment Link Status: " . $status;
 ```
 
 The `Status` can be one of the following:
 
-- `Completed`
-- `Active`
-- `Expired`
+- `New`
 - `InProcess`
-- `Cancelled`
+- `Canceled`
+- `Completed`
 
 ### 2. Direct Payment (with Credit Card)
 
@@ -203,12 +203,4 @@ switch ($callback->Payload->Order->Status) {
         // If an unknown status is received, return an appropriate message
         echo 'Unknown error';
 }
-```
-
-## Advanced: Direct Access to Response Fields
-
-While you can use specific getters like `getStatus()` or `getPaymentLink()`, the entire response object is public, allowing you to directly inspect its fields:
-
-```php
-var_dump($response->body);
 ```

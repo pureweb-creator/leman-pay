@@ -1,8 +1,10 @@
 <?php
 
-namespace PurewebCreator\LemanPay;
+namespace PurewebCreator\LemanPay\Payment;
 
 use Exception;
+use PurewebCreator\LemanPay\Util\JWS;
+use PurewebCreator\LemanPay\Util\MessageBuilder;
 
 abstract class LemanBase
 {
@@ -12,7 +14,6 @@ abstract class LemanBase
     protected const string DIRECT_PAYMENT_PATH = self::API_PREFIX."/cards/pay";
     protected const string PAYMENT_LINK_PATH = self::API_PREFIX."/paymentlink/create";
     protected const string TRANSACTION_STATUS_PATH = self::API_PREFIX."/transaction/status";
-    protected const string PAYMENT_LINK_STATUS_PATH = self::API_PREFIX."/paymentlink/status";
 
     protected string $sharedKey;
     protected string $kid;
@@ -68,7 +69,7 @@ abstract class LemanBase
                 MessageBuilder::create("Error")
                     ->addRow("Code: " . $r->Error->Code)
                     ->addRow("Message: " . $r->Error->Message)
-                    ->get()
+                    ->build()
             );
         }
 
@@ -79,37 +80,35 @@ abstract class LemanBase
                 MessageBuilder::create("Error")
                     ->addRow("Code: " . $r->Error->Code)
                     ->addRow("Message: " . $r->Error->Message)
-                    ->get()
+                    ->build()
             );
         }
 
         return $r;
     }
 
-
     /**
      * @throws Exception
      */
-    public function info(string $paymentId, string $path, $paymentType): PaymentResponse|PaymentLinkResponse
+    public function info(string $paymentId): Transaction
     {
-        $payload = ['MerchantId' => $paymentId];
+        $this->jws = JWS::create(
+            $this->getProtectedHeader(),
+            ['MerchantId' => $paymentId],
+            $this->sharedKey
+        );
 
-        $this->jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
-
-        $r = $this->execute(self::HOST.$path, $this->jws);
+        $r = $this->execute(self::HOST.self::TRANSACTION_STATUS_PATH, $this->jws);
 
         $payload = $this->decodeData($r);
 
-        return match ($paymentType) {
-            PaymentTypeEnum::DirectDebit =>  new PaymentResponse($payload),
-            PaymentTypeEnum::PaymentLink => new PaymentLinkResponse($payload)
-        };
+        return new Transaction($payload);
     }
 
     /**
      * @throws Exception
      */
-    public function paymentRequest(array $payload, string $path, $paymentType): PaymentResponse|PaymentLinkResponse
+    public function createPayment(array $payload, string $path): PaymentResponse
     {
         $this->jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
 
@@ -117,10 +116,7 @@ abstract class LemanBase
 
         $payload = $this->decodeData($r);
 
-        return match ($paymentType) {
-            PaymentTypeEnum::DirectDebit =>  new PaymentResponse($payload),
-            PaymentTypeEnum::PaymentLink => new PaymentLinkResponse($payload)
-        };
+        return new PaymentResponse($payload);
     }
 
     public function execute(string $uri, string $body): bool|string
