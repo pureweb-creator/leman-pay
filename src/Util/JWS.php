@@ -3,6 +3,7 @@
 namespace PurewebCreator\LemanPay\Util;
 
 use Exception;
+use PurewebCreator\LemanPay\Exception\InvalidJwsException;
 
 readonly class JWS
 {
@@ -30,7 +31,7 @@ readonly class JWS
         $parts = explode(".", $jws);
 
         if (count($parts) !== 3) {
-            throw new Exception("Invalid JWS format. Expecting header, payload, and signature.");
+            throw new InvalidJwsException("Invalid JWS format. Expecting header, payload, and signature.");
         }
 
         list(, $payload, ) = $parts;

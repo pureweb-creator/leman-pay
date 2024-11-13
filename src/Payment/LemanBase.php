@@ -3,6 +3,8 @@
 namespace PurewebCreator\LemanPay\Payment;
 
 use Exception;
+use PurewebCreator\LemanPay\Exception\BadApiRequestException;
+use PurewebCreator\LemanPay\Exception\InvalidRequestException;
 use PurewebCreator\LemanPay\Util\JWS;
 use PurewebCreator\LemanPay\Util\MessageBuilder;
 
@@ -66,7 +68,7 @@ abstract class LemanBase
         if (json_validate($r)) {
             $r = json_decode($r);
 
-            throw new Exception(
+            throw new BadApiRequestException(
                 MessageBuilder::create("Error")
                     ->addRow("Code: " . $r->Error->Code)
                     ->addRow("Message: " . $r->Error->Message)
@@ -77,7 +79,7 @@ abstract class LemanBase
         $r = json_decode(JWS::parse($r));
 
         if (isset($r->Error)) {
-            throw new Exception(
+            throw new InvalidRequestException(
                 MessageBuilder::create("Error")
                     ->addRow("Code: " . $r->Error->Code)
                     ->addRow("Message: " . $r->Error->Message)
