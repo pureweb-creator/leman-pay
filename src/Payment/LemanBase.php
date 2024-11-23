@@ -109,26 +109,6 @@ abstract class LemanBase
     /**
      * @throws Exception
      */
-    public function getTransactionInfo(string $merchantId, string $path): TransactionInfo
-    {
-        $payload = $this->paymentInfo($merchantId, $path);
-
-        return new TransactionInfo($payload);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getPaymentLinkInfo(string $merchantId, string $path): PaymentLinkInfo
-    {
-        $payload = $this->paymentInfo($merchantId, $path);
-
-        return new PaymentLinkInfo($payload);
-    }
-
-    /**
-     * @throws Exception
-     */
     public function createPayment(array $payload, string $path): PaymentResponse
     {
         $this->jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);

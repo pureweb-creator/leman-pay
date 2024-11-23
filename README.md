@@ -60,7 +60,7 @@ After creating a payment link, you can check its status:
 <?php
 
 $status = $lemanPay
-    ->getPaymentInfo("your-merchant-id") // the same MerchantId used in createPaymentLink()
+    ->getPaymentLinkInfo("your-merchant-id") // the same MerchantId used in createPaymentLink()
     ->getStatus();
 
 echo "Payment Link Status: " . $status;
