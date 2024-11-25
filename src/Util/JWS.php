@@ -24,7 +24,7 @@ readonly class JWS
     }
 
     /**
-     * @throws Exception
+     * @throws InvalidJwsException
      */
     public static function parse(string $jws): string
     {

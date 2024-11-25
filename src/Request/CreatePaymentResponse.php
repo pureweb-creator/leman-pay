@@ -1,8 +1,8 @@
 <?php
 
-namespace PurewebCreator\LemanPay\Payment;
+namespace PurewebCreator\LemanPay\Request;
 
-class PaymentResponse
+class CreatePaymentResponse
 {
     /**
      * @param object $payload
@@ -12,11 +12,11 @@ class PaymentResponse
 
     public function getOrderId()
     {
-        return $this->payload->OrderId ?? $this->payload->PaymentLinkId;
+        return $this->payload->OrderId;
     }
 
     public function getPaymentLink()
     {
-        return $this->payload->PaymentUrl ?? $this->payload->Uri;
+        return $this->payload->PaymentUrl;
     }
 }

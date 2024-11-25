@@ -152,14 +152,18 @@ This enables your system to respond to events immediately, such as updating an o
 This is done by setting the "CallbackUrl" field in the payload when you create a payment request.
 
 ### Example: Handling Webhooks
+
 ```php
 <?php
+
+use PurewebCreator\LemanPay\Util\JWS;
+
 // Retrieve the webhook data from the request
 $callback = @file_get_contents('php://input');
 
 try {
     // Process the callback data using LemanPay
-    $callback = $lemanPay->getCallbackInfo($callback);
+    $callback = json_decode(JWS::parse($callback));
 
 } catch (Exception $e) {
     // Respond with a 400 status code if there is an error processing the webhook

@@ -1,20 +1,15 @@
 <?php
 
-namespace PurewebCreator\LemanPay\Payment;
+namespace PurewebCreator\LemanPay\Request;
 
-readonly class PaymentLinkInfo
+readonly class PaymentLinkResponse
 {
     public function __construct(public object $body)
     {}
 
-    public function getPaymentLink(): string
-    {
-        return $this->body->Uri;
-    }
-
     public function getPaymentLinkId(): string
     {
-        return $this->body->PaymentLinkId;
+        return $this->body->Id;
     }
 
     public function getMerchantId(): string

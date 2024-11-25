@@ -3,53 +3,69 @@
 namespace PurewebCreator\LemanPay;
 
 use Exception;
-use PurewebCreator\LemanPay\Payment\LemanBase;
-use PurewebCreator\LemanPay\Payment\PaymentLinkInfo;
-use PurewebCreator\LemanPay\Payment\TransactionInfo;
+use PurewebCreator\LemanPay\Exception\BadApiRequestException;
+use PurewebCreator\LemanPay\Exception\InvalidJwsException;
+use PurewebCreator\LemanPay\Base\LemanBase;
+use PurewebCreator\LemanPay\Request\CreatePaymentLinkResponse;
+use PurewebCreator\LemanPay\Request\CreatePaymentResponse;
+use PurewebCreator\LemanPay\Request\PaymentLinkResponse;
+use PurewebCreator\LemanPay\Request\TransactionResponse;
 
 class LemanPay extends LemanBase
 {
     /**
-     * @throws Exception
+     * Payment creation via direct debit
+     *
+     * @param array $payload
+     *
+     * @return CreatePaymentResponse
+     *
+     * @throws InvalidJwsException Invalid JWS format
+     * @throws BadApiRequestException Invalid request. Most often, this status is issued due to a violation of the rules for interacting with the API.
      */
-    public function pay(array $payload): object
+    public function pay(array $payload): CreatePaymentResponse
     {
-        return $this->createPayment($payload, self::DIRECT_PAYMENT_PATH);
+        $payment = $this->createPayment($payload, self::CARDS_PREFIX.self::PAY_PATH);
+
+        return new CreatePaymentResponse($payment);
     }
 
     /**
-     * @throws Exception
+     * Payment creation via a payment link
+     *
+     * @param array $payload
+     *
+     * @return CreatePaymentLinkResponse
+     *
+     * @throws InvalidJwsException Invalid JWS format
+     * @throws BadApiRequestException Invalid request. Most often, this status is issued due to a violation of the rules for interacting with the API.
      */
-    public function createPaymentLink(array $payload): object
+    public function createPaymentLink(array $payload): CreatePaymentLinkResponse
     {
-        return $this->createPayment($payload, self::PAYMENT_LINK_PATH);
+        $payment = $this->createPayment($payload, self::PAYMENTLINK_PREFIX.self::CREATE_PATH);
+
+        return new CreatePaymentLinkResponse($payment);
     }
 
     /**
-     * @throws Exception
+     * @throws BadApiRequestException
+     * @throws InvalidJwsException
      */
-    public function getCallbackInfo(string $payload): object
+    public function getPaymentLinkInfo(string $merchantId): PaymentLinkResponse
     {
-        return $this->decodeData($payload);
+        $payload = $this->getPaymentInfo($merchantId, self::PAYMENTLINK_PREFIX.self::STATUS_PATH);
+
+        return new PaymentLinkResponse($payload);
     }
 
     /**
-     * @throws Exception
+     * @throws BadApiRequestException
+     * @throws InvalidJwsException
      */
-    public function getPaymentLinkInfo(string $merchantId): PaymentLinkInfo
+    public function getTransactionInfo(string $merchantId): TransactionResponse
     {
-        $payload = $this->paymentInfo($merchantId, self::PAYMENT_LINK_STATUS_PATH);
+        $payload = $this->getPaymentInfo($merchantId, self::TRANSACTION_PREFIX.self::STATUS_PATH);
 
-        return new PaymentLinkInfo($payload);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getPaymentInfo(string $merchantId): TransactionInfo
-    {
-        $payload = $this->paymentInfo($merchantId, self::TRANSACTION_STATUS_PATH);
-
-        return new TransactionInfo($payload);
+        return new TransactionResponse($payload);
     }
 }

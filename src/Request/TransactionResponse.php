@@ -1,8 +1,8 @@
 <?php
 
-namespace PurewebCreator\LemanPay\Payment;
+namespace PurewebCreator\LemanPay\Request;
 
-class TransactionInfo
+class TransactionResponse
 {
     /**
      * @param object $payload
