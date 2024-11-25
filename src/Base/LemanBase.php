@@ -2,9 +2,14 @@
 
 namespace PurewebCreator\LemanPay\Base;
 
-use PurewebCreator\LemanPay\Common\ResponseObject;
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 use PurewebCreator\LemanPay\Exception\BadApiRequestException;
 use PurewebCreator\LemanPay\Exception\InvalidJwsException;
+use PurewebCreator\LemanPay\Services\PaymentService;
+use PurewebCreator\LemanPay\Services\PaymentServiceInterface;
 use PurewebCreator\LemanPay\Util\JWS;
 use PurewebCreator\LemanPay\Util\MessageBuilder;
 
@@ -46,6 +51,11 @@ abstract class LemanBase
     const string CREATE_PATH = "/create";
 
     /**
+     * Path for refund operation
+     */
+    const string REFUND_PATH = "/refund";
+
+    /**
      * Signing algorithm being used in JWS
      */
     const string ALG = "HS256";
@@ -61,6 +71,16 @@ abstract class LemanBase
      * @var string
      */
     protected string $kid;
+
+    protected ClientInterface $httpClient;
+
+    public function __construct()
+    {
+        $this->httpClient = new Client([
+            'base_uri' => self::HOST,
+            'timeout'  => 2.0,
+        ]);
+    }
 
     protected function getProtectedHeader(): array
     {
@@ -93,55 +113,31 @@ abstract class LemanBase
     /**
      * @throws BadApiRequestException
      * @throws InvalidJwsException
+     * @throws GuzzleException
      */
-    public function createPayment(array $payload, string $path)
+    public function sendRequest(array $payload, string $path, $responseClass): object
     {
         $jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
 
         $r = $this->execute(self::HOST.$path, $jws);
 
-        $payment = $this->decodeData($r->getBody());
+        $payment = $this->parseResponseBody($r->getBody());
 
         if (isset($payment->Error)) {
             $this->handleError($payment->Error);
         }
 
-        return $payment;
-    }
-
-    /**
-     * @throws InvalidJwsException
-     * @throws BadApiRequestException
-     */
-    public function getPaymentInfo(string $merchantId, string $path)
-    {
-        $jws = JWS::create(
-            $this->getProtectedHeader(),
-            ['MerchantId' => $merchantId],
-            $this->sharedKey
-        );
-
-        $r = $this->execute(self::HOST.$path, $jws);
-
-        $payment = $this->decodeData($r->getBody());
-
-        if (isset($payment->Error)) {
-            $this->handleError($payment->Error);
-        }
-
-        return $payment;
+        return new $responseClass($payment);
     }
 
     /**
      * @throws InvalidJwsException
      */
-    protected function decodeData(bool|string $r): object
+    protected function parseResponseBody(bool|string $r): object
     {
-        if (json_validate($r)) {
-            return json_decode($r);
-        }
-
-        return json_decode(JWS::parse($r));
+        return json_validate($r)
+            ? json_decode($r)
+            : json_decode(JWS::parse($r));
     }
 
     /**
@@ -156,23 +152,15 @@ abstract class LemanBase
         );
     }
 
-    protected function execute(string $uri, string $body): ResponseObject
+    /**
+     * Executing the request
+     *
+     * @throws GuzzleException
+     */
+    protected function execute(string $uri, string $body): ResponseInterface
     {
-        $ch = curl_init($uri);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POSTFIELDS => $body
+        return $this->httpClient->request('POST', $uri, [
+            'body' => $body,
         ]);
-
-        $r = curl_exec($ch);
-
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        curl_close($ch);
-
-        return new ResponseObject(
-            body: $r,
-            status: $http_code
-        );
     }
 }

@@ -2,56 +2,50 @@
 
 namespace PurewebCreator\LemanPay\Request;
 
-class TransactionResponse
+class TransactionResponse extends AbstractResponse
 {
-    /**
-     * @param object $payload
-     */
-    public function __construct(public object $payload)
-    {}
-
     public function getOrder(): object
     {
-        return $this->payload->Order;
+        return $this->body->Order;
     }
 
     public function getRebillId(): string
     {
-        return $this->payload->RebillId;
+        return $this->body->RebillId;
     }
 
     public function getRrn(): string
     {
-        return $this->payload->Rrn;
+        return $this->body->Rrn;
     }
 
     public function getError(): string
     {
-        return $this->payload->Error ?? false;
+        return $this->body->Error ?? false;
     }
 
     public function getCard(): object
     {
-        return $this->payload->Card;
+        return $this->body->Card;
     }
 
     public function getClient(): object
     {
-        return $this->payload->Client;
+        return $this->body->Client;
     }
 
     public function getBin(): object
     {
-        return $this->payload->Bin;
+        return $this->body->Bin;
     }
 
     public function getP2PPayee(): object
     {
-        return $this->payload->P2PPayee;
+        return $this->body->P2PPayee;
     }
 
     public function getLinkedOrder(): array
     {
-        return $this->payload->LinkedOrder;
+        return $this->body->LinkedOrder;
     }
 }

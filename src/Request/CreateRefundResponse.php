@@ -2,15 +2,15 @@
 
 namespace PurewebCreator\LemanPay\Request;
 
-class CreatePaymentResponse extends AbstractResponse
+class CreateRefundResponse extends AbstractResponse
 {
     public function getOrderId()
     {
         return $this->body->OrderId;
     }
 
-    public function getPaymentLink()
+    public function getMerchantId()
     {
-        return $this->body->PaymentUrl;
+        return $this->body->MerchantId;
     }
 }

@@ -15,6 +15,7 @@
     ],
     "require": {
       "ext-openssl": "*",
-      "ext-curl": "*"
+      "ext-curl": "*",
+        "guzzlehttp/guzzle": "^7.9"
     }
 }

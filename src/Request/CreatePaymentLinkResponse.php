@@ -2,21 +2,15 @@
 
 namespace PurewebCreator\LemanPay\Request;
 
-class CreatePaymentLinkResponse
+class CreatePaymentLinkResponse extends AbstractResponse
 {
-    /**
-     * @param object $payload
-     */
-    public function __construct(public object $payload)
-    {}
-
     public function getOrderId()
     {
-        return $this->payload->PaymentLinkId;
+        return $this->body->PaymentLinkId;
     }
 
     public function getPaymentLink()
     {
-        return $this->payload->Uri;
+        return $this->body->Uri;
     }
 }

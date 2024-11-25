@@ -2,7 +2,6 @@
 
 namespace PurewebCreator\LemanPay\Util;
 
-use Exception;
 use PurewebCreator\LemanPay\Exception\InvalidJwsException;
 
 readonly class JWS
