@@ -2,7 +2,6 @@
 
 namespace PurewebCreator\LemanPay;
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PurewebCreator\LemanPay\Exception\BadApiRequestException;
 use PurewebCreator\LemanPay\Exception\InvalidJwsException;

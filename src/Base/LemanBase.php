@@ -5,11 +5,8 @@ namespace PurewebCreator\LemanPay\Base;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Http\Message\ResponseInterface;
 use PurewebCreator\LemanPay\Exception\BadApiRequestException;
 use PurewebCreator\LemanPay\Exception\InvalidJwsException;
-use PurewebCreator\LemanPay\Services\PaymentService;
-use PurewebCreator\LemanPay\Services\PaymentServiceInterface;
 use PurewebCreator\LemanPay\Util\JWS;
 use PurewebCreator\LemanPay\Util\MessageBuilder;
 
@@ -82,7 +79,7 @@ abstract class LemanBase
         ]);
     }
 
-    protected function getProtectedHeader(): array
+    protected function getHeaders(): array
     {
         return [
             "alg" => self::ALG,
@@ -96,10 +93,10 @@ abstract class LemanBase
     {
         if (base64_encode(base64_decode($key, true)) === $key) {
             $this->sharedKey = base64_decode($key);
-        } else {
-            $this->sharedKey = $key;
+            return $this;
         }
 
+        $this->sharedKey = $key;
         return $this;
     }
 
@@ -115,11 +112,13 @@ abstract class LemanBase
      * @throws InvalidJwsException
      * @throws GuzzleException
      */
-    public function sendRequest(array $payload, string $path, $responseClass): object
+    protected function sendRequest(array $payload, string $path, string $responseClass): object
     {
-        $jws = JWS::create($this->getProtectedHeader(), $payload, $this->sharedKey);
+        $jws = JWS::create($this->getHeaders(), $payload, $this->sharedKey);
 
-        $r = $this->execute(self::HOST.$path, $jws);
+        $r = $this->httpClient->request('POST', self::HOST.$path, [
+            'body' => $jws,
+        ]);
 
         $payment = $this->parseResponseBody($r->getBody());
 
@@ -133,7 +132,7 @@ abstract class LemanBase
     /**
      * @throws InvalidJwsException
      */
-    protected function parseResponseBody(bool|string $r): object
+    protected function parseResponseBody(string $r): object
     {
         return json_validate($r)
             ? json_decode($r)
@@ -147,20 +146,8 @@ abstract class LemanBase
     {
         throw new BadApiRequestException(
             MessageBuilder::create("<b>$response->Code</b>")
-                ->addRow($response->Message)
+                ->addRow((string)$response->Message)
                 ->build()
         );
-    }
-
-    /**
-     * Executing the request
-     *
-     * @throws GuzzleException
-     */
-    protected function execute(string $uri, string $body): ResponseInterface
-    {
-        return $this->httpClient->request('POST', $uri, [
-            'body' => $body,
-        ]);
     }
 }
