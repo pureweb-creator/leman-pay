@@ -69,11 +69,9 @@ abstract class LemanBase
      */
     protected string $kid;
 
-    protected ClientInterface $httpClient;
-
-    public function __construct()
+    public function __construct(protected ?ClientInterface $httpClient = null)
     {
-        $this->httpClient = new Client([
+        $this->httpClient = $this->httpClient ?? new Client([
             'base_uri' => self::HOST,
             'timeout'  => 2.0,
         ]);
